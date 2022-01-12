@@ -17,6 +17,7 @@ import {
 import { MobileNav } from './components/MobileNav';
 import { DesktopNav } from './components/DesktopNav';
 import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 interface DefaultLayoutProps {
   children: React.ReactElement;
@@ -24,6 +25,9 @@ interface DefaultLayoutProps {
 
 export function DefaultLayout({ children }: DefaultLayoutProps) {
   const { isOpen, onToggle } = useDisclosure();
+  const { data: session, status } = useSession()
+  const isLogged = status === "authenticated";
+  console.log({ session, status })
 
   return (
     <Box minH="100vh" w="100%">
@@ -68,29 +72,51 @@ export function DefaultLayout({ children }: DefaultLayoutProps) {
           justify="flex-end"
           direction="row"
           spacing={6}>
-          <Link href="/auth/login" passHref prefetch>
-            <Button
-              as="a"
-              fontSize="sm"
-              fontWeight={400}
-              variant="link"
-            >
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/auth/signup" passHref prefetch>
-            <Button
+            {!isLogged ? (
+            <>
+              {/* <Link href="/auth/login" passHref prefetch> */}
+                <Button
+                  // as="a"
+                  fontSize="sm"
+                  fontWeight={400}
+                  variant="link"
+                  onClick={() => signIn('cognito',{
+                    callbackUrl: `${window.location.origin}/protected`,
+                  })}
+                >
+                  Sign In
+                </Button>
+              {/* </Link> */}
+
+              {/* <Link href="/auth/signup" passHref prefetch> */}
+                <Button
+                  display={{ base: 'none', md: 'inline-flex' }}
+                  fontSize="sm"
+                  fontWeight={600}
+                  color="white"
+                  bg="pink.400"
+                  // onClick={() => signUp}
+                  _hover={{
+                    bg: 'pink.300',
+                  }}>
+                  Sign Up
+                </Button>
+              {/* </Link> */}
+              </>
+            ) : ( 
+              <Button
               display={{ base: 'none', md: 'inline-flex' }}
               fontSize="sm"
               fontWeight={600}
               color="white"
               bg="pink.400"
+              onClick={() => signOut()}
               _hover={{
                 bg: 'pink.300',
               }}>
-              Sign Up
+              Logout
             </Button>
-          </Link>
+          ) }
         </Stack>
       </Flex>
 
